@@ -1,0 +1,7 @@
+{
+  "name": "liteThinking",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
