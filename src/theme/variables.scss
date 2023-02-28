@@ -2,6 +2,9 @@
 http://ionicframework.com/docs/theming/ */
 
 /** Ionic CSS Variables **/
+@import 'lite-style-margin.scss';
+@import 'lite-style-components.scss';
+
 :root {
   /** primary **/
   --ion-color-primary: #3880ff;
