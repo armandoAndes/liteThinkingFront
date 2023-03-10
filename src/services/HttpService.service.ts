@@ -77,7 +77,7 @@ export const ApiClienteMethods = {
     },
     deleteItem(body: ItemFormInterface): Promise<any> {
       return httpClient.delete(
-        "https://us-central1-matig2.cloudfunctions.net/litethinkingfront/updateItem" /*  http://35.209.157.176:8000/api/item/updateItem - https://us-central1-matig2.cloudfunctions.net/litethinkingfront/updateItem*/,
+        "https://us-central1-matig2.cloudfunctions.net/litethinkingfront/deleteItem" /*  http://35.209.157.176:8000/api/item/updateItem - https://us-central1-matig2.cloudfunctions.net/litethinkingfront/updateItem*/,
 
         {
           headers: {
