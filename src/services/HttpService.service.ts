@@ -13,18 +13,25 @@ httpClient.interceptors.response.use(
   }
 );
 export const ApiClienteMethods = {
-  
   login: {
     auth(body: LoginFormInterface): Promise<any> {
-      return httpClient.post("http://localhost:8000/api/user/login", {
-        body
-      });
+      return httpClient.post(
+        "http://localhost:8000/api/user/login" /* http://35.209.157.176:8000/api/user/login - https://us-central1-matig2.cloudfunctions.net/litethinkingfront/login */,
+        {
+          body,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
     },
   },
   register: {
     register(newEnterprise: RegisterFormInterface): Promise<any> {
       return httpClient.post(
-        "http://localhost:8000/api/enterprises/registerEnterprise",
+        "http://localhost:8000/api/enterprises/registerEnterprise" /*  http://35.209.157.176:8000/api/enterprises/registerEnterprise - https://us-central1-matig2.cloudfunctions.net/litethinkingfront/registerEnterprise*/,
         { data: newEnterprise },
         {
           headers: {
@@ -37,7 +44,7 @@ export const ApiClienteMethods = {
   item: {
     registerItem(newItem: ItemFormInterface): Promise<any> {
       return httpClient.post(
-        "http://localhost:8000/api/item/registerItem",
+        "http://localhost:8000/api/item/registerItem" /*  http://35.209.157.176:8000/api/item/registerEnterprise - https://us-central1-matig2.cloudfunctions.net/litethinkingfront/registerItem*/,
         { data: newItem },
         {
           headers: {
@@ -48,7 +55,7 @@ export const ApiClienteMethods = {
     },
     getListItem(id: number): Promise<ItemFormInterface[]> {
       return httpClient.post(
-        "http://localhost:8000/api/item/getItem",
+        "http://localhost:8000/api/item/getItem" /*  http://35.209.157.176:8000/api/item/getItem - https://us-central1-matig2.cloudfunctions.net/litethinkingfront/getItem*/,
         { body: { id } },
         {
           headers: {
@@ -57,9 +64,9 @@ export const ApiClienteMethods = {
         }
       );
     },
-    updateEnterprise(body: ItemFormInterface): Promise<any> {
+    updateItem(body: ItemFormInterface): Promise<any> {
       return httpClient.post(
-        "http://localhost:8000/api/item/updateItem",
+        "http://localhost:8000/api/item/updateItem" /*  http://35.209.157.176:8000/api/item/updateItem - https://us-central1-matig2.cloudfunctions.net/litethinkingfront/updateItem*/,
         { body },
         {
           headers: {
@@ -68,11 +75,23 @@ export const ApiClienteMethods = {
         }
       );
     },
+    deleteItem(body: ItemFormInterface): Promise<any> {
+      return httpClient.delete(
+        "http://localhost:8000/api/item/deleteItem" /*  http://35.209.157.176:8000/api/item/updateItem - https://us-central1-matig2.cloudfunctions.net/litethinkingfront/updateItem*/,
+
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          data: body,
+        }
+      );
+    },
   },
   listEnterprise: {
     getListEnterprise(): Promise<RegisterFormInterface[]> {
       return httpClient.get(
-        "http://localhost:8000/api/enterprises/getEnterprises",
+        "http://localhost:8000/api/enterprises/getEnterprises" /*  http://35.209.157.176:8000/api/enterprises/getEnterprises - https://us-central1-matig2.cloudfunctions.net/litethinkingfront/getEnterprises*/,
         {
           headers: {
             "Content-Type": "application/json",
@@ -81,8 +100,8 @@ export const ApiClienteMethods = {
       );
     },
     deleteEnterprise(id: number): Promise<any> {
-      return httpClient.delete(
-        "http://localhost:8000/api/enterprises/deleteEnterprise",
+      return httpClient.post(
+        "http://localhost:8000/api/enterprises/deleteEnterprise" /* http://35.209.157.176:8000/api/enterprises/deleteEnterprise - https://us-central1-matig2.cloudfunctions.net/litethinkingfront/deleteEnterprise*/,
         {
           headers: {
             "Content-Type": "application/json",
@@ -95,8 +114,24 @@ export const ApiClienteMethods = {
     },
     updateEnterprise(body: RegisterFormInterface): Promise<any> {
       return httpClient.post(
-        "http://localhost:8000/api/enterprises/updateEnterprise",
+        "http://localhost:8000/api/enterprises/updateEnterprise" /*  http://35.209.157.176:8000/api/enterprises/updateEnterprise - https://us-central1-matig2.cloudfunctions.net/litethinkingfront/updateEnterprise*/,
         { body },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    },
+  },
+  email: {
+    sendEmail(destiny: string, html: string): Promise<any> {
+      return httpClient.post(
+        "https://us-central1-matig2.cloudfunctions.net/send-email" /* http://35.209.157.176:8000/api/enterprises/deleteEnterprise - https://us-central1-matig2.cloudfunctions.net/litethinkingfront/deleteEnterprise*/,
+        {
+          dest: destiny,
+          html,
+        },
         {
           headers: {
             "Content-Type": "application/json",

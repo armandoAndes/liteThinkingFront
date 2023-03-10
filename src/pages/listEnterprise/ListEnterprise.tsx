@@ -2,10 +2,13 @@ import {
   IonButton,
   IonCol,
   IonContent,
+  IonFooter,
   IonGrid,
+  IonModal,
   IonPage,
   IonRow,
   useIonLoading,
+  useIonViewWillEnter,
 } from "@ionic/react";
 import {
   Page,
@@ -17,7 +20,7 @@ import {
 } from "@react-pdf/renderer";
 
 import { OverlayEventDetail } from "@ionic/react/dist/types/components/react-component-lib/interfaces";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 
 import HeaderComponent from "../../components/Header/Header";
 import ModalComponent from "../../components/Modal/Modal";
@@ -25,18 +28,37 @@ import { RegisterFormInterface } from "../../interfaces/RegisterForm.interface";
 import { ApiClienteMethods } from "../../services/HttpService.service";
 import { useHistory } from "react-router";
 import { LoginEnum } from "../../enums/login.enum";
+import ModalErrorComponent from "../../components/ModalError/ModalError";
+import { ModalErrorInterface } from "../../interfaces/ModalError.interface";
+import { AppContext } from "../../context/App.context";
 
 const ListEnterprise: React.FC = () => {
   const modal = useRef<HTMLIonModalElement>(null);
+  const { appContextValue, setAppContext } = useContext(AppContext);
+
   const history = useHistory();
   const [listEnterprises, setListEnterprises] = useState<
     RegisterFormInterface[]
   >([]);
   const [present, dismiss] = useIonLoading();
+  const clickModal = () => {
+    setErrorBody({
+      isOpen: false,
+      labelButton: "Cerrar",
+      message: ``,
+      title: "Error",
+      clickEvent: clickModal,
+    });
+  };
+  const [errorBody, setErrorBody] = useState<ModalErrorInterface>({
+    isOpen: false,
+    labelButton: "Cerrar",
+    message: "Error",
+    title: "Error",
+    clickEvent: clickModal,
+  });
   const [message, setMessage] = useState("Hola");
-  const [user, setUser] = useState<any>(
-    JSON.parse(localStorage.getItem("user")!)
-  );
+  const [user] = useState<any>(JSON.parse(localStorage.getItem("user")!));
   const styles = StyleSheet.create({
     page: {
       flexDirection: "row",
@@ -58,7 +80,13 @@ const ListEnterprise: React.FC = () => {
       );
       await getList();
     } catch (e) {
-      console.log("ERROR EDIT", e);
+      setErrorBody({
+        isOpen: true,
+        labelButton: "Cerrar",
+        message: `${e}`,
+        title: "Error updateEnterprise",
+        clickEvent: clickModal,
+      });
     }
   };
   const deleteEnterprise = async (id: number) => {
@@ -66,7 +94,13 @@ const ListEnterprise: React.FC = () => {
       const res = await ApiClienteMethods.listEnterprise.deleteEnterprise(id);
       await getList();
     } catch (e) {
-      console.log("ERROR DELETE", e);
+      setErrorBody({
+        isOpen: true,
+        labelButton: "Cerrar",
+        message: `${e}`,
+        title: "Error borrando empresa",
+        clickEvent: clickModal,
+      });
     }
   };
   const onWillDismiss = (ev: CustomEvent<OverlayEventDetail>) => {
@@ -75,8 +109,19 @@ const ListEnterprise: React.FC = () => {
     }
   };
   const getList = async () => {
-    const resList = await ApiClienteMethods.listEnterprise.getListEnterprise();
-    setListEnterprises(resList);
+    try {
+      setListEnterprises(
+        await ApiClienteMethods.listEnterprise.getListEnterprise()
+      );
+    } catch (e) {
+      setErrorBody({
+        isOpen: true,
+        labelButton: "Cerrar",
+        message: `${e}`,
+        title: "Error al obtener empresa",
+        clickEvent: clickModal,
+      });
+    }
   };
   const goItems = (id: number) => {
     localStorage.setItem("id", id.toString());
@@ -88,7 +133,13 @@ const ListEnterprise: React.FC = () => {
     };
     init();
   }, []);
-  getList();
+  const sendEmail = () => {
+    setAppContext({
+      ...appContextValue,
+      listEnterprises: listEnterprises,
+    });
+    history.replace("/email");
+  };
   const PDFEnterprise = () => (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -117,9 +168,14 @@ const ListEnterprise: React.FC = () => {
               offsetMd="1"
             >
               <IonRow>
-                <IonCol size="1" sizeXs="4">
+                <IonCol size="1" sizeXs="3">
                   <IonButton onClick={() => history.replace("/login")}>
                     Atrás
+                  </IonButton>
+                </IonCol>
+                <IonCol size="1" sizeXs="3">
+                  <IonButton onClick={() => sendEmail()}>
+                    Enviar Email
                   </IonButton>
                 </IonCol>
               </IonRow>
@@ -220,6 +276,11 @@ const ListEnterprise: React.FC = () => {
           </IonRow>
         </IonGrid>
       </IonContent>
+      <IonFooter>
+        <IonModal className="modal-component-error" isOpen={errorBody.isOpen}>
+          <ModalErrorComponent {...errorBody} />
+        </IonModal>
+      </IonFooter>
     </IonPage>
   );
 };

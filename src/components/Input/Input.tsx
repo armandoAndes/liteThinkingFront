@@ -14,7 +14,7 @@ const InputComponent: React.FC<InputComponentInterface> = (
           <IonLabel>{props.label}</IonLabel>
           <IonInput className="border" {...props}></IonInput>
         </IonItem>
-        {meta.error && <h6 className="li-lb li-lb-error">{meta.error}</h6>}
+        {meta.touched && meta.error && <h6 className="li-lb li-lb-error">{meta.error}</h6>}
       </IonCol>
     </IonRow>
   );

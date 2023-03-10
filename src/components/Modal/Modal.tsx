@@ -34,6 +34,7 @@ const ModalComponent: React.FC<ModalInterface> = (props: ModalInterface) => {
             validateOnChange={true}
             validateOnBlur={true}
             validateOnMount={true}
+            initialTouched={true}
           >
             {(formikProps) => (
               <Form>

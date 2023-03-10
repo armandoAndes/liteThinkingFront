@@ -2,20 +2,24 @@ import {
   IonButton,
   IonCol,
   IonContent,
+  IonFooter,
   IonGrid,
+  IonModal,
   IonPage,
   IonRow,
 } from "@ionic/react";
 import { Form, Formik, useField } from "formik";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useHistory } from "react-router";
 import HeaderComponent from "../../components/Header/Header";
 import InputComponent from "../../components/Input/Input";
+import ModalErrorComponent from "../../components/ModalError/ModalError";
 import { registerFormValidation } from "../../configs/RegisterFormValidations.config";
+import { ModalErrorInterface } from "../../interfaces/ModalError.interface";
 import { RegisterFormInterface } from "../../interfaces/RegisterForm.interface";
 import { RegisterLabels } from "../../labels/Register.labels";
 import { ApiClienteMethods } from "../../services/HttpService.service";
-import "./Register.scss";
+
 const Register: React.FC = () => {
   const [initialValues] = useState<RegisterFormInterface>({
     address: "",
@@ -23,6 +27,24 @@ const Register: React.FC = () => {
     nit: "",
     phone: "",
   });
+  const [modal, setModal] = useState<boolean>(false);
+  const clickModal = () => {
+    setErrorBody({
+      isOpen: false,
+      labelButton: "Cerrar",
+      message: ``,
+      title: "Error",
+      clickEvent: clickModal,
+    });
+  };
+  const [errorBody, setErrorBody] = useState<ModalErrorInterface>({
+    isOpen: false,
+    labelButton: "Cerrar",
+    message: "Error",
+    title: "Error",
+    clickEvent: clickModal,
+  });
+
   const history = useHistory();
   const [form, setForm] = useState<RegisterFormInterface>();
   const onSubmit = async (body: RegisterFormInterface) => {
@@ -31,11 +53,21 @@ const Register: React.FC = () => {
   const createEnterprise = async (body: RegisterFormInterface) => {
     try {
       const res = await ApiClienteMethods.register.register(body);
-      history.replace('/list-enterprise');
-    } catch (e) {
-      console.log("error", e);
+      history.push("/list-enterprise");
+    } catch (e: any) {
+      setErrorBody({
+        isOpen: true,
+        labelButton: "Cerrar",
+        message: `${e.response.data.message}`,
+        title: "Error al crear empresa",
+        clickEvent: clickModal,
+      });
     }
   };
+
+  useEffect(() => {
+    setModal(true);
+  }, [errorBody]);
   return (
     <IonPage>
       <HeaderComponent title={RegisterLabels.headerTitle} />
@@ -52,6 +84,7 @@ const Register: React.FC = () => {
                 validateOnChange={true}
                 validateOnBlur={true}
                 validateOnMount={true}
+                initialTouched={true}
               >
                 {(formikProps) => (
                   <Form>
@@ -121,7 +154,7 @@ const Register: React.FC = () => {
                           id="login-password"
                           ionLabelPosition="floating"
                           label={RegisterLabels.labelPhone}
-                          type="text"
+                          type="tel"
                           placeholder={RegisterLabels.placeholderPhone}
                           name="phone"
                           value={formikProps.values.phone}
@@ -154,6 +187,11 @@ const Register: React.FC = () => {
           </IonRow>
         </IonGrid>
       </IonContent>
+      <IonFooter>
+        <IonModal className="modal-component-error" isOpen={errorBody.isOpen}>
+          <ModalErrorComponent {...errorBody} />
+        </IonModal>
+      </IonFooter>
     </IonPage>
   );
 };

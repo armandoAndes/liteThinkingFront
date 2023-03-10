@@ -10,36 +10,36 @@ import {
   IonPage,
   IonRow,
 } from "@ionic/react";
+import ReactDOMServer from "react-dom/server";
 import { Form, Formik, useField } from "formik";
 import { useContext, useState } from "react";
 import { useHistory } from "react-router";
-
+import { RegisterFormInterface } from "../../interfaces/RegisterForm.interface";
 import HeaderComponent from "../../components/Header/Header";
 import InputComponent from "../../components/Input/Input";
 import ModalErrorComponent from "../../components/ModalError/ModalError";
-import { loginFormValidation } from "../../configs/LoginFormValidations.config";
+import { emailFormValidation } from "../../configs/EmailFormValidations.config";
 import { AppContext } from "../../context/App.context";
+import { EmailInterface } from "../../interfaces/Email.interface";
 
-import { LoginFormInterface } from "../../interfaces/LoginForm.interface";
 import { ModalErrorInterface } from "../../interfaces/ModalError.interface";
 import { LoginLabels } from "../../labels/Login.labels";
 import { ApiClienteMethods } from "../../services/HttpService.service";
 
-const Login: React.FC = () => {
-  const { appContextValue, setAppContext } = useContext(AppContext);
-  
-  const [initialValues] = useState<LoginFormInterface>({
-    name: "",
-    password: "",
+const Email: React.FC = () => {
+  const { appContextValue } = useContext(AppContext);
+  const { listEnterprises } = appContextValue;
+  const [initialValues] = useState<EmailInterface>({
+    dest: "",
+    html: "",
   });
-  const [error, setError] = useState<boolean>(false);
   const history = useHistory();
   const clickModal = () => {
     setErrorBody({
       isOpen: false,
       labelButton: "Cerrar",
       message: ``,
-      title: "Error",
+      title: "Email",
       clickEvent: clickModal,
     });
   };
@@ -50,25 +50,25 @@ const Login: React.FC = () => {
     title: "Error Login",
     clickEvent: clickModal,
   });
-  const [form, setForm] = useState<LoginFormInterface>();
-  const onSubmit = (body: LoginFormInterface) => {
+  const [form, setForm] = useState<EmailInterface>();
+  const onSubmit = (body: EmailInterface) => {
     setForm(body);
   };
-
-  const login = async (body: LoginFormInterface) => {
+  const sendEmail = async () => {
     try {
-      const res = await ApiClienteMethods.login.auth(body);
-      if (res.length > 0) {
-        localStorage.setItem("user", JSON.stringify(res[0]));
-        setAppContext({
-          user: res[0],
-        });
-        history.push("/list-enterprise");
-      } else {
-        setError(true);
-      }
+      await ApiClienteMethods.email.sendEmail(
+        form?.dest!,
+        ReactDOMServer.renderToString(generateHTML())
+      );
+      setErrorBody({
+        isOpen: true,
+        labelButton: "Cerrar",
+        message: `Email enviado`,
+        title: "Email",
+        clickEvent: clickModal,
+      });
+      history.push("/list-enterprise");
     } catch (e) {
-      setError(true);
       setErrorBody({
         isOpen: true,
         labelButton: "Cerrar",
@@ -78,19 +78,47 @@ const Login: React.FC = () => {
       });
     }
   };
+  const generateHTML = () => {
+    return (
+      <IonRow>
+        <IonCol size="12" className="text-center">
+          <IonItem lines="none" mode="md">
+            <IonLabel>Empresas registradas</IonLabel>
+          </IonItem>
+        </IonCol>
+        {listEnterprises &&
+          listEnterprises.map(
+            (enterprise: RegisterFormInterface, index: number) => {
+              return (
+                <div>
+                  <h4>Nombre: {enterprise.name}</h4>
+                  <br />
+                  <h4>Nit: {enterprise.nit}</h4>
+                  <br />
+                  <h4>Dirección: {enterprise.address}</h4>
+                  <br />
+                  <h4>Tel: {enterprise.phone}</h4>
+                  <br />
+                </div>
+              );
+            }
+          )}
+      </IonRow>
+    );
+  };
   return (
     <IonPage>
-      <HeaderComponent title={LoginLabels.headerTitle} visible={false} />
+      <HeaderComponent title={"Email"} visible={false} />
       <IonContent>
         <IonGrid>
           <IonRow>
             <IonCol className="mt-100" size="10" offset="1">
               <Formik
                 initialValues={initialValues}
-                onSubmit={(values: LoginFormInterface) => {
+                onSubmit={(values: EmailInterface) => {
                   onSubmit(values);
                 }}
-                validationSchema={loginFormValidation}
+                validationSchema={emailFormValidation}
                 validateOnChange={true}
                 validateOnBlur={true}
                 validateOnMount={true}
@@ -105,26 +133,9 @@ const Login: React.FC = () => {
                           ionLabelPosition="floating"
                           label={LoginLabels.labelEmail}
                           type="email"
-                          name="name"
+                          name="dest"
                           placeholder={LoginLabels.placeholderEmail}
-                          value={formikProps.values.name}
-                          onIonChange={(e: any) => {
-                            formikProps.handleChange(e);
-                          }}
-                          useField={useField}
-                        />
-                      </IonCol>
-                    </IonRow>
-                    <IonRow>
-                      <IonCol size="12">
-                        <InputComponent
-                          id="login-password"
-                          ionLabelPosition="floating"
-                          label={LoginLabels.labelPassword}
-                          type="password"
-                          name="password"
-                          placeholder={LoginLabels.placeholderPassword}
-                          value={formikProps.values.password}
+                          value={formikProps.values.dest}
                           onIonChange={(e: any) => {
                             formikProps.handleChange(e);
                           }}
@@ -138,28 +149,14 @@ const Login: React.FC = () => {
                           disabled={!formikProps.isValid}
                           color="primary"
                           mode="md"
+                          type="submit"
                           onClick={() => {
-                            login(formikProps.values);
+                            sendEmail();
                           }}
                         >
-                          {LoginLabels.button}
+                          {"Enviar"}
                         </IonButton>
                       </IonCol>
-                    </IonRow>
-                    <IonRow>
-                      {error && (
-                        <IonCol className="">
-                          <IonItem
-                            className="text-center li-lb li-lb-error"
-                            lines="none"
-                            mode="md"
-                          >
-                            <IonLabel className="text-center li-lb li-lb-error">
-                              No existe usuario :(
-                            </IonLabel>
-                          </IonItem>
-                        </IonCol>
-                      )}
                     </IonRow>
                   </Form>
                 )}
@@ -177,4 +174,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default Email;

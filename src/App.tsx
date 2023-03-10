@@ -25,33 +25,51 @@ import "@ionic/react/css/display.css";
 
 /* Theme variables */
 import "./theme/variables.scss";
-
+import GuardSession from "./guard/SessionGuard.guard";
+import { useState } from "react";
+import { AppContext } from "./context/App.context";
+import { ContextInterface } from "./interfaces/Context.interface";
+import Email from "./pages/email/Email";
 
 setupIonicReact();
 
-
-const App: React.FC = () => (
-  <IonApp>
-    <IonReactRouter>
-      <IonRouterOutlet>
-        <Route exact path="/login">
-          <Login />
-        </Route>
-        <Route exact path="/register">
-          <Register />
-        </Route>
-        <Route exact path="/register-product">
-          <Item />
-        </Route>
-        <Route exact path="/list-enterprise">
-          <ListEnterprise />
-        </Route>
-        <Route exact path="/" component={Login}>
-          <Redirect to="/login" />
-        </Route>
-      </IonRouterOutlet>
-    </IonReactRouter>
-  </IonApp>
-);
+const App: React.FC = () => {
+  const [appContext, setAppContext] = useState<Partial<ContextInterface>>({
+    user: {
+      name: "",
+      password: "",
+    },
+    listEnterprises: []
+  });
+  return (
+    <AppContext.Provider value={{ appContextValue: appContext, setAppContext }}>
+      <IonApp>
+        <IonReactRouter>
+          <IonRouterOutlet>
+            <Route exact path="/login">
+              <Login />
+            </Route>
+            <Route exact path="/" component={Login}>
+              <Redirect to="/login" />
+            </Route>
+            <GuardSession component={Login} exact={true} path="/login" />
+            <GuardSession component={Register} exact={true} path="/register" />
+            <GuardSession component={Email} exact={true} path="/email" />
+            <GuardSession
+              component={Item}
+              exact={true}
+              path="/register-product"
+            />
+            <GuardSession
+              component={ListEnterprise}
+              exact={true}
+              path="/list-enterprise"
+            />
+          </IonRouterOutlet>
+        </IonReactRouter>
+      </IonApp>
+    </AppContext.Provider>
+  );
+};
 
 export default App;

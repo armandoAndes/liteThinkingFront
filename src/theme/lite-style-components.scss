@@ -27,3 +27,12 @@ ion-button{
     align-items: center;
     justify-content: center;
   }
+.modal-component-error{
+    --height: 200px !important;
+}
+.visible-on{
+    visibility: visible;
+}
+.visible-off{
+    visibility: hidden;
+}
